@@ -295,7 +295,7 @@ export default function Home() {
           aria-label="Undo last action"
         >
           <Undo2 size={14} />
-          Undo Catch
+          Undo
         </Button>
       </div>
  
@@ -337,11 +337,13 @@ export default function Home() {
  
       <Card className='mb-4 bg-muted'>
         <CardContent className='flex items-center gap-2'>
-          <h4 className="flex-1 flex items-center gap-2">
-            <Scissors size={16} />
-            Broken Lines
-          </h4>
-          <span className="font-bold">{numThreads}/120</span>
+          <div className='flex-1 flex flex-col'>
+            <h4 className="flex-1 flex items-center gap-2">
+              <Scissors size={16} />
+              Broken Lines
+            </h4>
+            <div className="font-bold">{numThreads}/120</div>
+          </div>
           <Button
             onClick={incrementThread}
             disabled={numThreads >= 120}
