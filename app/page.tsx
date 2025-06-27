@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { RotateCcw, Info, Undo2, Scissors } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import Image from 'next/image'
 
 enum Lake {
   LAKEHOUSE = 1,
@@ -76,13 +77,6 @@ const getFishButtonColor = (type: FishType) => {
   }
 }
 
-enum PoolStatus {
-  Normal = 1,
-  Good = 2,
-  Complete = 3,
-  NoLegendary = 4
-}
-
 type LakeData = {
   fishCounts: ReturnType<typeof getFishCounts>,
   lastAction?: { type: FishType, count: number }
@@ -129,7 +123,7 @@ export default function Home() {
           })
           return current;
         })
-      } catch (e) {
+      } catch {
         console.warn('Failed to load saved state');
       }
     }
@@ -212,17 +206,6 @@ export default function Home() {
   const resetThreads = () => {
     setNumThreads(0)
   };
- 
-  const getLakeStatus = (lake: Lake) => {
-    const data = lakesData[lake];
-    const total = getFishTotal(data.fishCounts);
-    const legendaryOdds = getLegendaryPercent(data.fishCounts);
- 
-    if (total === 0) return PoolStatus.Complete;
-    else if (data.fishCounts[FishType.LEGENDARY] === 0) return PoolStatus.NoLegendary;
-    else if (legendaryOdds > baselinePercent) return PoolStatus.Good;
-    else return PoolStatus.Normal;
-  };
   
   return (
     <div className="max-w-md mx-auto p-4 min-h-screen">
@@ -235,6 +218,16 @@ export default function Home() {
         >
           <Info size={20} />
         </Button>
+        <a href='https://ko-fi.com/O4O71FBM0I' target='_blank'>
+          <Image
+            height={36}
+            width={143}
+            className="h-[36px] w-[143px] border-0"
+            src='https://storage.ko-fi.com/cdn/kofi5.png?v=6'
+            alt='Buy Me a Coffee at ko-fi.com'
+            unoptimized
+          />
+        </a>
       </div>
  
       {showInfo && (
@@ -251,7 +244,6 @@ export default function Home() {
       <div className="mb-4">
         <div className="grid grid-cols-4 gap-2 mb-4">
           {Object.values(Lake).filter((v) => typeof v === 'number').map(lake => {
-            const status = getLakeStatus(lake);
             const isActive = currentLake === lake;
             const lakeFishCounts = lakesData[lake].fishCounts;
             return (
@@ -296,7 +288,7 @@ export default function Home() {
           Reset All
         </Button>
         <Button
-          onClick={resetAllLakes}
+          onClick={undoLastAction}
           disabled={!lastAction}
           variant="secondary"
           size="lg"
