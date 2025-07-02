@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, Info, Undo2, Scissors, X } from 'lucide-react';
+import { Info, Undo2, Scissors, X, Fish } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image'
@@ -56,16 +56,29 @@ const getFishBgColor = (fishType: FishType) => {
       return 'bg-button-fish-legendary';
   }
 }
+const getBlankCounts = () => {
+  return {
+    [FishType.SMALLRARE]: 0,
+    [FishType.MEDIUMRARE]: 0,
+    [FishType.LARGERARE]: 0,
+    [FishType.SMALLEPIC]: 0,
+    [FishType.LARGEEPIC]: 0,
+    [FishType.LEGENDARY]: 0,
+  }
+}
 
-type LakeData = {
+type TotalData = {
   fishCounts: ReturnType<typeof getFishCounts>,
-  actionStack: FishType[]
+}
+type LakeData = TotalData & {
+  actionStack: FishType[],
 }
 
 type StoredState = {
   currentLake: Lake,
   numThreads: number,
-  lakesData: {[lake in Lake]: LakeData}
+  lakesData: {[lake in Lake]: LakeData},
+  totalData: {[lake in Lake]: TotalData},
 }
 
 export default function Home() {
@@ -76,6 +89,12 @@ export default function Home() {
     [Lake.SUNSET]: { fishCounts: getFishCounts(Lake.SUNSET), actionStack: [] },
     [Lake.OCEANIC]: { fishCounts: getFishCounts(Lake.OCEANIC), actionStack: [] },
     [Lake.POLAR]: { fishCounts: getFishCounts(Lake.POLAR), actionStack: [] },
+  });
+  const [totalData, setTotalData] = useState<{[lake in Lake]: TotalData}>({
+    [Lake.LAKEHOUSE]: { fishCounts: getBlankCounts() },
+    [Lake.SUNSET]: { fishCounts: getBlankCounts() },
+    [Lake.OCEANIC]: { fishCounts: getBlankCounts() },
+    [Lake.POLAR]: { fishCounts: getBlankCounts() },
   });
   const [showInfo, setShowInfo] = useState(false);
  
@@ -103,6 +122,17 @@ export default function Home() {
           })
           return current;
         })
+        setTotalData(prev => {
+          const current = { ...prev }
+          Object.keys(data.totalData || {}).forEach(key => {
+            const lake = key   as Lake;
+            current[lake] = {
+              ...current[lake],
+              ...data.totalData[lake]
+            }
+          })
+          return current;
+        })
       } catch {
         console.warn('Failed to load saved state');
       }
@@ -114,12 +144,31 @@ export default function Home() {
     const state: StoredState = {
       currentLake,
       numThreads,
-      lakesData
+      lakesData,
+      totalData
     };
     localStorage.setItem('fishingTracker', JSON.stringify(state));
-  }, [currentLake, numThreads, lakesData]);
+  }, [currentLake, numThreads, lakesData, totalData]);
  
-const getNumUncaughtFish = (lake: Lake) => {
+  const getTotalCaughtInfo = () => {
+    let totalCaught = 0;
+    let totalLegCaught = 0;
+    Object.values(totalData).forEach(lake => {
+      Object.keys(lake.fishCounts).forEach(key => {
+        const fishType = key as FishType;
+        const count = lake.fishCounts[fishType];
+        totalCaught += count
+        if (fishType === FishType.LEGENDARY) {
+          totalLegCaught += count
+        }
+      })
+    })
+    return {
+      totalCaught,
+      totalLegCaught
+    }
+  }
+  const getNumUncaughtFish = (lake: Lake) => {
     const fishCounts = lakesData[lake].fishCounts;
     let total = 0;
     Object.values(fishCounts).forEach(count => {
@@ -148,6 +197,7 @@ const getNumUncaughtFish = (lake: Lake) => {
     }
   }
 
+  const totalInfo = getTotalCaughtInfo();
   const currentLakesData = lakesData[currentLake];
   const { fishCounts: currentFishCounts, actionStack: currentActionStack } = currentLakesData;
   const currentOddsInfo = getOddsInfo(currentLake);
@@ -161,13 +211,24 @@ const getNumUncaughtFish = (lake: Lake) => {
       }
     }));
   };
+  const updateTotalData = (lake: Lake, fishType: FishType, change: number) => {
+    setTotalData(prev => ({
+      ...prev,
+      [lake]: {
+        fishCounts: {
+          ...prev[lake].fishCounts,
+          [fishType]: prev[lake].fishCounts[fishType] + change
+        }
+      }
+    }));
+  }
  
   const handleLakeChange = (newLake: Lake) => {
     if (!newLake) { return; }
     setCurrentLake(newLake);
   };
  
-  const resetCurrentLake = () => {
+  const refillCurrentLake = () => {
     updateLakeData(currentLake, {
       fishCounts: getFishCounts(currentLake),
       actionStack: []
@@ -185,6 +246,7 @@ const getNumUncaughtFish = (lake: Lake) => {
         fishCounts: newCounts,
         actionStack: [...currentActionStack]
       });
+      updateTotalData(currentLake, type, 1);
     }
   };
  
@@ -199,6 +261,7 @@ const getNumUncaughtFish = (lake: Lake) => {
         fishCounts: newCounts,
         actionStack: [...currentActionStack]
       });
+      updateTotalData(currentLake, lastType, -1);
     }
   };
  
@@ -221,6 +284,13 @@ const getNumUncaughtFish = (lake: Lake) => {
       };
     });
     setLakesData(resetData);
+    const resetTotalData: Record<Lake, TotalData> = {} as Record<Lake, TotalData>;
+    Object.values(Lake).forEach(lake => {
+      resetTotalData[lake] = {
+        fishCounts: getBlankCounts(),
+      };
+    });
+    setTotalData(resetTotalData);
     resetThreads();
   };
   
@@ -328,14 +398,14 @@ const getNumUncaughtFish = (lake: Lake) => {
 
       <div className='flex gap-2 mb-4'>
         <Button
-          onClick={resetCurrentLake}
-          variant={getNumUncaughtFish(currentLake) === 0 ? "default": "secondary"}
+          onClick={refillCurrentLake}
+          disabled={getNumUncaughtFish(currentLake) > 0}
           size="lg"
           className='flex-1'
-          aria-label="Reset current lake"
+          aria-label="Refill current lake"
         >
-          <RotateCcw size={14} />
-          Reset Lake
+          <Fish size={14} />
+          Refill Lake
         </Button>
         <Button
           onClick={undoLastAction}
@@ -373,6 +443,19 @@ const getNumUncaughtFish = (lake: Lake) => {
           >
             Reset
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-4">
+        <CardContent className='text-lg'>
+          <div className="flex items-center gap-1">
+            Total Fish Caught:
+            <span className="font-bold">{totalInfo.totalCaught}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            Total Legendary Fish Caught:
+            <span className="font-bold">{totalInfo.totalLegCaught}</span>
+          </div>
         </CardContent>
       </Card>
 
