@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Info, Undo2, Scissors, X, Fish } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import Image from 'next/image'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 enum Lake {
@@ -41,7 +40,7 @@ const getFishCounts = (lake: Lake) => {
   }
 }
 const getFishImgSrc = (lake: Lake, fishType: FishType) => {
-  return `/archero2-fish-companion/Fish_${lake}_${fishType}.png`;
+  return `/archero2-fish-companion/Fish_1_${lake}_${fishType}.png`;
 }
 const getFishBgColor = (fishType: FishType) => {
   switch (fishType) {
@@ -306,13 +305,10 @@ export default function Home() {
           <Info size={20} />
         </Button>
         <a href='https://ko-fi.com/O4O71FBM0I' target='_blank'>
-          <Image
-            height={36}
-            width={143}
-            className="h-[36px] w-[143px] border-0"
+          <img
+            className="h-9 border-0"
             src='https://storage.ko-fi.com/cdn/kofi5.png?v=6'
             alt='Buy Me a Coffee at ko-fi.com'
-            unoptimized
           />
         </a>
       </div>
@@ -367,13 +363,10 @@ export default function Home() {
             aria-label={`Catch ${type.toLowerCase()} fish`}
           >
             <div className='flex flex-col'>
-              <Image
-                className="h-[36px]"
+              <img
+                className="h-9 aspect-auto"
                 src={`${getFishImgSrc(currentLake, type)}`}
                 alt={`${currentLake} ${type} fish`}
-                width={36}
-                height={36}
-                unoptimized
               />
               <div>{`${currentFishCounts[type]} left`}</div>
             </div>
