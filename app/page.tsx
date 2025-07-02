@@ -40,26 +40,10 @@ const getFishCounts = (lake: Lake) => {
     [FishType.LEGENDARY]: totalCount * baselineLegPercent,
   }
 }
-// const getFishCardColor = (type: FishType) => {
-//   switch (type) {
-//     case FishType.LEGENDARY:
-//       return 'bg-card-fish-legendary';
-//     case FishType.EPIC:
-//       return 'bg-card-fish-epic';
-//     case FishType.RARE:
-//       return 'bg-card-fish-rare';
-//   }
-// }
-// const getFishButtonColor = (type: FishType) => {
-//   switch (type) {
-//     case FishType.LEGENDARY:
-//       return 'bg-button-fish-legendary';
-//     case FishType.EPIC:
-//       return 'bg-button-fish-epic';
-//     case FishType.RARE:
-//       return 'bg-button-fish-rare';
-//   }
-// }
+
+const getFishImgSrc = (lake: Lake, fishType: FishType) => {
+  return `/archero2-fish-companion/Fish_${lake}_${fishType}.png`;
+}
 
 type LakeData = {
   fishCounts: ReturnType<typeof getFishCounts>,
@@ -301,8 +285,15 @@ const getNumUncaughtFish = (lake: Lake) => {
             aria-label={`Catch ${type.toLowerCase()} fish`}
           >
             <div className='flex flex-col'>
-              <div>{type}</div>
-              <div>{currentFishCounts[type]}</div>
+              <Image
+                className="h-[36px]"
+                src={`${getFishImgSrc(currentLake, type)}`}
+                alt={`${currentLake} ${type} fish`}
+                width={36}
+                height={36}
+                unoptimized
+              />
+              <div>{`${currentFishCounts[type]} left`}</div>
             </div>
           </Button>
         ))}
@@ -382,38 +373,6 @@ const getNumUncaughtFish = (lake: Lake) => {
         <X size={14} />
         Reset All
       </Button>
-      {/* <div className="flex gap-2 mb-4">
-        <Button
-          onClick={resetCurrentLake}
-          variant={getFishTotal(fishCounts) === 0 ? "default": "secondary"}
-          size="lg"
-          className='flex-1'
-          aria-label="Reset current lake"
-        >
-          <RotateCcw size={14} />
-          Reset Lake {currentLake}
-        </Button>
-        <Button
-          onClick={resetAllLakes}
-          variant="secondary"
-          size="lg"
-          className='flex-1'
-          aria-label="Reset all lakes"
-        >
-          <RotateCcw size={14} />
-          Reset All
-        </Button>
-        <Button
-          onClick={undoLastAction}
-          disabled={!lastAction}
-          variant="secondary"
-          size="lg"
-          aria-label="Undo last action"
-        >
-          <Undo2 size={14} />
-          Undo
-        </Button>
-      </div> */}
     </div>
   );
 };
