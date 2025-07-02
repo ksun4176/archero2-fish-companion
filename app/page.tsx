@@ -1,107 +1,91 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, Info, Undo2, Scissors } from 'lucide-react';
+import { RotateCcw, Info, Undo2, Scissors, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 enum Lake {
-  LAKEHOUSE = 1,
-  SUNSET = 2,
-  OCEANIC = 3,
-  POLAR = 4
+  LAKEHOUSE = "Lakehouse",
+  SUNSET = "Sunset",
+  OCEANIC = "Oceanic",
+  POLAR = "Polar"
 }
 
 enum FishType {
-  RARE = "Rare",
-  EPIC = "Epic",
-  LEGENDARY = "Legendary"
+  SMALLRARE = "SR",
+  MEDIUMRARE = "MR",
+  LARGERARE = "LR",
+  SMALLEPIC = "SE",
+  LARGEEPIC = "LE",
+  LEGENDARY = "LEG"
 }
-const baselinePercent = 0.025;
-const getFishCounts = (lake: Lake) => {
-  let totalFish = 40;
+const getFishTotals = (lake: Lake) => {
   if (lake === Lake.POLAR) {
-    totalFish = 80;
+    return 80;
   }
-
+  return 40;
+}
+const baselineLegPercent = 0.025;
+const getFishCounts = (lake: Lake) => {
+  const totalCount = getFishTotals(lake);
   return {
-    [FishType.RARE]: totalFish * 0.75, // 37.5% small + 25% medium + 12.5% large
-    [FishType.EPIC]: totalFish * 0.225, // 15% small + 7.5% large
-    [FishType.LEGENDARY]: totalFish * 0.025,
+    [FishType.SMALLRARE]: totalCount * 0.375,
+    [FishType.MEDIUMRARE]: totalCount * 0.25,
+    [FishType.LARGERARE]: totalCount * 0.125,
+    [FishType.SMALLEPIC]: totalCount * 0.15,
+    [FishType.LARGEEPIC]: totalCount * 0.075,
+    [FishType.LEGENDARY]: totalCount * baselineLegPercent,
   }
 }
-const getFishTotal = (fishCounts: ReturnType<typeof getFishCounts>) => {
-  return fishCounts[FishType.LEGENDARY] + fishCounts[FishType.EPIC] + fishCounts[FishType.RARE];
-}
-const getLegendaryPercent = (fishCounts: ReturnType<typeof getFishCounts>) => {
-  const total = getFishTotal(fishCounts);
-  return total > 0 ? (fishCounts[FishType.LEGENDARY] / total) : 0;
-}
-const getOddsButtonColor = (fishCounts: ReturnType<typeof getFishCounts>) => {
-  const legendaryPercent = getLegendaryPercent(fishCounts);
-  if (legendaryPercent > baselinePercent) return 'text-green-300 dark:text-green-900';
-  if (legendaryPercent < baselinePercent) return 'text-red-400 dark:text-red-700';
-  return '';
-}
-const getOddsCardColor = (fishCounts: ReturnType<typeof getFishCounts>) => {
-  const legendaryPercent = getLegendaryPercent(fishCounts);
-  if (legendaryPercent > baselinePercent) return 'text-green-600 dark:text-green-400';
-  if (legendaryPercent < baselinePercent) return 'text-red-600 dark:text-red-500';
-  return '';
-}
-const getLegendaryOddsSymbol = (fishCounts: ReturnType<typeof getFishCounts>) => {
-  const legendaryPercent = getLegendaryPercent(fishCounts);
-  if (legendaryPercent > baselinePercent) return '↑';
-  if (legendaryPercent < baselinePercent) return '↓';
-  return '';
-}
-const getFishCardColor = (type: FishType) => {
-  switch (type) {
-    case FishType.LEGENDARY:
-      return 'bg-card-fish-legendary';
-    case FishType.EPIC:
-      return 'bg-card-fish-epic';
-    case FishType.RARE:
-      return 'bg-card-fish-rare';
-  }
-}
-const getFishButtonColor = (type: FishType) => {
-  switch (type) {
-    case FishType.LEGENDARY:
-      return 'bg-button-fish-legendary';
-    case FishType.EPIC:
-      return 'bg-button-fish-epic';
-    case FishType.RARE:
-      return 'bg-button-fish-rare';
-  }
-}
+// const getFishCardColor = (type: FishType) => {
+//   switch (type) {
+//     case FishType.LEGENDARY:
+//       return 'bg-card-fish-legendary';
+//     case FishType.EPIC:
+//       return 'bg-card-fish-epic';
+//     case FishType.RARE:
+//       return 'bg-card-fish-rare';
+//   }
+// }
+// const getFishButtonColor = (type: FishType) => {
+//   switch (type) {
+//     case FishType.LEGENDARY:
+//       return 'bg-button-fish-legendary';
+//     case FishType.EPIC:
+//       return 'bg-button-fish-epic';
+//     case FishType.RARE:
+//       return 'bg-button-fish-rare';
+//   }
+// }
 
 type LakeData = {
   fishCounts: ReturnType<typeof getFishCounts>,
-  lastAction?: { type: FishType, count: number }
+  actionStack: FishType[]
 }
 
 type StoredState = {
   currentLake: Lake,
   numThreads: number,
-  LakesData: {[lake in Lake]: LakeData}
+  lakesData: {[lake in Lake]: LakeData}
 }
 
 export default function Home() {
   const [currentLake, setCurrentLake] = useState(Lake.LAKEHOUSE);
   const [numThreads, setNumThreads] = useState(0);
   const [lakesData, setLakesData] = useState<{[lake in Lake]: LakeData}>({
-    [Lake.LAKEHOUSE]: { fishCounts: getFishCounts(Lake.LAKEHOUSE) },
-    [Lake.SUNSET]: { fishCounts: getFishCounts(Lake.SUNSET) },
-    [Lake.OCEANIC]: { fishCounts: getFishCounts(Lake.OCEANIC) },
-    [Lake.POLAR]: { fishCounts: getFishCounts(Lake.POLAR) },
+    [Lake.LAKEHOUSE]: { fishCounts: getFishCounts(Lake.LAKEHOUSE), actionStack: [] },
+    [Lake.SUNSET]: { fishCounts: getFishCounts(Lake.SUNSET), actionStack: [] },
+    [Lake.OCEANIC]: { fishCounts: getFishCounts(Lake.OCEANIC), actionStack: [] },
+    [Lake.POLAR]: { fishCounts: getFishCounts(Lake.POLAR), actionStack: [] },
   });
   const [showInfo, setShowInfo] = useState(false);
  
   // Load state from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('fishingTrackerV2');
+    const saved = localStorage.getItem('fishingTracker');
     if (saved) {
       try {
         const data = JSON.parse(saved) as StoredState;
@@ -114,11 +98,11 @@ export default function Home() {
         // Merge saved data with defaults to handle any missing lakes
         setLakesData(prev => {
           const current = { ...prev }
-          Object.keys(data.LakesData || {}).forEach(r => {
-            const lake = Lake[r as keyof typeof Lake];
+          Object.keys(data.lakesData || {}).forEach(key => {
+            const lake = key   as Lake;
             current[lake] = {
               ...current[lake],
-              ...data.LakesData[lake]
+              ...data.lakesData[lake]
             }
           })
           return current;
@@ -131,17 +115,47 @@ export default function Home() {
  
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    const state = {
+    const state: StoredState = {
       currentLake,
       numThreads,
-      LakesData: lakesData
+      lakesData
     };
-    localStorage.setItem('fishingTrackerV2', JSON.stringify(state));
+    localStorage.setItem('fishingTracker', JSON.stringify(state));
   }, [currentLake, numThreads, lakesData]);
  
+const getNumUncaughtFish = (lake: Lake) => {
+    const fishCounts = lakesData[lake].fishCounts;
+    let total = 0;
+    Object.values(fishCounts).forEach(count => {
+      total += count;
+    });
+    return total;
+  }
+  const getOddsInfo = (lake: Lake) => {
+    const fishCounts = lakesData[lake].fishCounts;
+    const numUncaughtFish = getNumUncaughtFish(lake);
+    
+    const percentage = numUncaughtFish > 0 ? fishCounts[FishType.LEGENDARY] / numUncaughtFish : 0;
+    let color = '';
+    let symbol = '';
+    if (percentage > baselineLegPercent) {
+      color = 'text-green-300';
+      symbol = ' ↑';
+    }
+    else if (percentage < baselineLegPercent) {
+      color = 'text-red-400';
+      symbol = ' ↓';
+    }
+    return {
+      color,
+      repr: `${(percentage*100).toFixed(1)}%${symbol}`
+    }
+  }
+
   const currentLakesData = lakesData[currentLake];
-  const { fishCounts, lastAction } = currentLakesData;
- 
+  const { fishCounts: currentFishCounts, actionStack: currentActionStack } = currentLakesData;
+  const currentOddsInfo = getOddsInfo(currentLake);
+  
   const updateLakeData = (lake: Lake, updates: LakeData) => {
     setLakesData(prev => ({
       ...prev,
@@ -153,46 +167,41 @@ export default function Home() {
   };
  
   const handleLakeChange = (newLake: Lake) => {
+    if (!newLake) { return; }
     setCurrentLake(newLake);
   };
  
   const resetCurrentLake = () => {
     updateLakeData(currentLake, {
-      fishCounts: getFishCounts(currentLake)
+      fishCounts: getFishCounts(currentLake),
+      actionStack: []
     });
-  };
- 
-  const resetAllLakes = () => {
-    const resetData: Record<Lake, LakeData> = {} as Record<Lake, LakeData>;
-    Object.values(Lake).filter((v) => typeof v === 'number').forEach(lake => {
-      resetData[lake] = {
-        fishCounts: getFishCounts(lake)
-      };
-    });
-    setLakesData(resetData);
   };
  
   const catchFish = (type: FishType) => {
-    if (fishCounts[type] > 0) {
+    if (currentFishCounts[type] > 0) {
       const newCounts = {
-        ...fishCounts,
-        [type]: fishCounts[type] - 1
+        ...currentFishCounts,
+        [type]: currentFishCounts[type] - 1
       };
+      currentActionStack.push(type);
       updateLakeData(currentLake, {
         fishCounts: newCounts,
-        lastAction: { type, count: 1 }
+        actionStack: [...currentActionStack]
       });
     }
   };
  
   const undoLastAction = () => {
-    if (lastAction) {
+    const lastType = currentActionStack.pop();
+    if (lastType) {
       const newCounts = {
-        ...fishCounts,
-        [lastAction.type]: fishCounts[lastAction.type] + lastAction.count
+        ...currentFishCounts,
+        [lastType]: currentFishCounts[lastType] + 1
       };
       updateLakeData(currentLake, {
-        fishCounts: newCounts
+        fishCounts: newCounts,
+        actionStack: [...currentActionStack]
       });
     }
   };
@@ -206,11 +215,23 @@ export default function Home() {
   const resetThreads = () => {
     setNumThreads(0)
   };
+
+  const resetAll = () => {
+    const resetData: Record<Lake, LakeData> = {} as Record<Lake, LakeData>;
+    Object.values(Lake).forEach(lake => {
+      resetData[lake] = {
+        fishCounts: getFishCounts(lake),
+        actionStack: []
+      };
+    });
+    setLakesData(resetData);
+    resetThreads();
+  };
   
   return (
     <div className="max-w-md mx-auto p-4 min-h-screen">
       <div className="flex items-center justify-between mb-4 ">
-        <h1 className="text-2xl font-bold">Fishing Companion</h1>
+        <h1 className="text-xl font-bold">Fishing Companion</h1>
         <Button
           variant="ghost"
           size="icon"
@@ -234,39 +255,134 @@ export default function Home() {
         <div className="mb-4 p-2 bg-secondary border rounded-lg text-sm">
           <h3 className="font-semibold mb-2">How to use:</h3>
           <ul className="space-y-1 list-disc pl-4">
-            <li>Track how many gold tickets you need</li>
+            <li>Track the fish you have caught in each lake</li>
             <li>Track how many line breaks you have left</li>
             <li>If you have enough silver tickets, go for easiest gold tickets</li>
           </ul>
         </div>
       )}
  
-      <div className="mb-4">
-        <div className="grid grid-cols-4 gap-2 mb-4">
-          {Object.values(Lake).filter((v) => typeof v === 'number').map(lake => {
-            const isActive = currentLake === lake;
-            const lakeFishCounts = lakesData[lake].fishCounts;
+      <div className="flex flex-col items-center mb-4">
+        <div className="mb-2">Select a Lake</div>
+        <ToggleGroup
+          variant="outline"
+          type="single"
+          value={currentLake}
+          onValueChange={handleLakeChange}
+        >
+          {Object.values(Lake).map(lake => {
+            const oddsInfo = getOddsInfo(lake);
             return (
-              <Button
-                key={lake}
-                onClick={() => handleLakeChange(lake)}
-                className={`h-auto transition-all flex flex-col ${
-                  isActive ? 'bg-button-pool-selected' : 'bg-button-pool'
-                }`}
-                aria-label={`Switch to lake ${lake}`}
-              >
-                <div className="text-sm">Lake {lake}</div>
-                <div className="text-xs">{`${getFishTotal(lakeFishCounts)} fish`}</div>
-                <div className={`text-xs ${getOddsButtonColor(lakeFishCounts)}`}>
-                  {`${(getLegendaryPercent(lakeFishCounts)*100).toFixed(1)}% ${getLegendaryOddsSymbol(lakeFishCounts)}`}
-                </div>
-              </Button>
+                <ToggleGroupItem
+                  key={lake}
+                  value={lake}
+                  className='h-fit py-2'
+                >
+                  <div className="flex flex-col">
+                    <div>{lake}</div>
+                    <div className='text-xs'>{`${getNumUncaughtFish(lake)} fish`}</div>
+                    <div className={`text-xs ${oddsInfo.color}`}>
+                      {oddsInfo.repr}
+                    </div>
+                  </div>
+                </ToggleGroupItem>
             )
           })}
-        </div>
+        </ToggleGroup>
       </div>
- 
-      <div className="flex gap-2 mb-4">
+
+       <div className='grid grid-cols-3 gap-2 mb-4'>
+        {Object.values(FishType).map(type => (
+          <Button
+            key={type}
+            onClick={() => catchFish(type)}
+            disabled={currentFishCounts[type] === 0}
+            className='h-fit'
+            aria-label={`Catch ${type.toLowerCase()} fish`}
+          >
+            <div className='flex flex-col'>
+              <div>{type}</div>
+              <div>{currentFishCounts[type]}</div>
+            </div>
+          </Button>
+        ))}
+      </div>
+
+      <Card className="mb-4">
+        <CardContent className='text-lg'>
+          <div className="flex items-center gap-1">
+            Fish remaining:
+            <span className="font-bold">{getNumUncaughtFish(currentLake)}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            Chance next fish is Legendary:
+            <span className={`font-bold ${currentOddsInfo.color}`}>
+              {currentOddsInfo.repr}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className='flex gap-2 mb-4'>
+        <Button
+          onClick={resetCurrentLake}
+          variant={getNumUncaughtFish(currentLake) === 0 ? "default": "secondary"}
+          size="lg"
+          className='flex-1'
+          aria-label="Reset current lake"
+        >
+          <RotateCcw size={14} />
+          Reset Lake
+        </Button>
+        <Button
+          onClick={undoLastAction}
+          disabled={currentActionStack.length === 0}
+          variant="secondary"
+          size="lg"
+          aria-label="Undo last action"
+        >
+          <Undo2 size={14} />
+          Undo Catch
+        </Button>
+      </div>
+      
+      <Card className='mb-4'>
+        <CardContent className='flex items-center gap-2'>
+          <div className='flex-1 flex flex-col'>
+            <h4 className="flex-1 flex items-center gap-2">
+              <Scissors size={16} />
+              Broken Lines
+            </h4>
+            <div className="font-bold">{numThreads}/120</div>
+          </div>
+          <Button
+            onClick={incrementThread}
+            disabled={numThreads >= 120}
+            aria-label='Add broken line'
+          >
+            +1 Break
+          </Button>
+          <Button
+            variant='outline'
+            onClick={resetThreads}
+            disabled={numThreads === 0}
+            aria-label='Reset thread counter'
+          >
+            Reset
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Button
+        onClick={resetAll}
+        variant="destructive"
+        className='w-full'
+        aria-label="Reset all data"
+      >
+        <X size={14} />
+        Reset All
+      </Button>
+      {/* <div className="flex gap-2 mb-4">
         <Button
           onClick={resetCurrentLake}
           variant={getFishTotal(fishCounts) === 0 ? "default": "secondary"}
@@ -297,70 +413,7 @@ export default function Home() {
           <Undo2 size={14} />
           Undo
         </Button>
-      </div>
- 
-      <div className="space-y-4 mb-4">
-        {Object.values(FishType).map((type) => (
-          <Card key={type} className={`${getFishCardColor(type)}`}>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <h3 className="flex-1 font-semibold text-lg">{type}</h3>
-                <p className="text-2xl font-bold">{fishCounts[type]}</p>
-                <Button
-                  onClick={() => catchFish(type)}
-                  disabled={fishCounts[type] === 0}
-                  className={`${getFishButtonColor(type)}`}
-                  aria-label={`Catch ${type.toLowerCase()} fish`}
-                >
-                  Catch
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-        
-      <Card className="mb-4 bg-muted">
-        <CardContent className='text-lg'>
-          <div className="flex items-center gap-1">
-            Fish remaining:
-            <span className="font-bold">{getFishTotal(fishCounts)}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            Chance next fish is Legendary:
-            <span className={`font-bold ${getOddsCardColor(fishCounts)}`}>
-              {`${(getLegendaryPercent(fishCounts)*100).toFixed(1)}% ${getLegendaryOddsSymbol(fishCounts)}`}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
- 
-      <Card className='mb-4 bg-muted'>
-        <CardContent className='flex items-center gap-2'>
-          <div className='flex-1 flex flex-col'>
-            <h4 className="flex-1 flex items-center gap-2">
-              <Scissors size={16} />
-              Broken Lines
-            </h4>
-            <div className="font-bold">{numThreads}/120</div>
-          </div>
-          <Button
-            onClick={incrementThread}
-            disabled={numThreads >= 120}
-            aria-label='Add broken line'
-          >
-            +1 Break
-          </Button>
-          <Button
-            variant='outline'
-            onClick={resetThreads}
-            disabled={numThreads === 0}
-            aria-label='Reset thread counter'
-          >
-            Reset
-          </Button>
-        </CardContent>
-      </Card>
+      </div> */}
     </div>
   );
 };
