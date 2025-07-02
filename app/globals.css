@@ -89,9 +89,9 @@
   --card-fish-legendary: oklch(0.96 0.06 96);
   --card-fish-epic: oklch(0.90 0.06 307);
   --card-fish-rare: oklch(0.90 0.06 231);
-  --button-fish-legendary: oklch(0.67 0.16 58);
-  --button-fish-epic: oklch(0.56 0.25 302);
-  --button-fish-rare: oklch(0.59 0.14 242);
+  --button-fish-legendary: oklch(0.7511 0.1593 73.66);
+  --button-fish-epic: oklch(0.5703 0.2448 317.49);
+  --button-fish-rare: oklch(0.5397 0.1861 271.21);
 }
 
 .dark {
@@ -131,9 +131,9 @@
   --card-fish-legendary: oklch(0.208 0.042 265.755);
   --card-fish-epic: oklch(0.208 0.042 265.755);
   --card-fish-rare: oklch(0.208 0.042 265.755);
-  --button-fish-legendary: oklch(0.84 0.16 84);
-  --button-fish-epic: oklch(0.63 0.23 304);
-  --button-fish-rare: oklch(0.75 0.14 233);
+  --button-fish-legendary: oklch(0.83 0.19 73.66);
+  --button-fish-epic: oklch(0.65 0.24 294);
+  --button-fish-rare: oklch(0.67 0.22 250);
 }
 
 @layer base {

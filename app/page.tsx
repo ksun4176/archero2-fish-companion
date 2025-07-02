@@ -40,9 +40,21 @@ const getFishCounts = (lake: Lake) => {
     [FishType.LEGENDARY]: totalCount * baselineLegPercent,
   }
 }
-
 const getFishImgSrc = (lake: Lake, fishType: FishType) => {
   return `/archero2-fish-companion/Fish_${lake}_${fishType}.png`;
+}
+const getFishBgColor = (fishType: FishType) => {
+  switch (fishType) {
+    case FishType.SMALLRARE:
+    case FishType.MEDIUMRARE:
+    case FishType.LARGERARE:
+      return 'bg-button-fish-rare';
+    case FishType.SMALLEPIC:
+    case FishType.LARGEEPIC:
+      return 'bg-button-fish-epic';
+    case FishType.LEGENDARY:
+      return 'bg-button-fish-legendary';
+  }
 }
 
 type LakeData = {
@@ -123,11 +135,11 @@ const getNumUncaughtFish = (lake: Lake) => {
     let color = '';
     let symbol = '';
     if (percentage > baselineLegPercent) {
-      color = 'text-green-300';
+      color = 'text-green-700 dark:text-green-300';
       symbol = ' ↑';
     }
     else if (percentage < baselineLegPercent) {
-      color = 'text-red-400';
+      color = 'text-red-700 dark:text-red-400';
       symbol = ' ↓';
     }
     return {
@@ -281,7 +293,7 @@ const getNumUncaughtFish = (lake: Lake) => {
             key={type}
             onClick={() => catchFish(type)}
             disabled={currentFishCounts[type] === 0}
-            className='h-fit'
+            className={`h-fit ${getFishBgColor(type)} text-shadow-black text-shadow-sm/50 dark:text-shadow-none`} 
             aria-label={`Catch ${type.toLowerCase()} fish`}
           >
             <div className='flex flex-col'>
