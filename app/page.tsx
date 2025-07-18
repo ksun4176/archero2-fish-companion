@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Info, Undo2, Scissors, X, Fish } from 'lucide-react';
+import { Info, Undo2, Scissors, X, Fish, FishSymbol } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -70,7 +70,7 @@ type TotalData = {
   fishCounts: ReturnType<typeof getFishCounts>,
 }
 type LakeData = TotalData & {
-  actionStack: FishType[],
+  actionStack: (FishType | "ALL")[],
 }
 
 type StoredState = {
@@ -248,10 +248,37 @@ export default function Home() {
       updateTotalData(currentLake, type, 1);
     }
   };
+
+  const catchWholePool = () => {
+    currentActionStack.push('ALL');
+    updateLakeData(currentLake, {
+      fishCounts: getBlankCounts(),
+      actionStack: [...currentActionStack]
+    });
+    addWholePoolToTotalCount();
+  };
+
+  const addWholePoolToTotalCount = (undo?: boolean) => {
+    const fishCounts = getFishCounts(currentLake);
+    Object.keys(fishCounts).forEach(key => {
+      const fishType = key as FishType;
+      fishCounts[fishType] = totalData[currentLake].fishCounts[fishType] + (fishCounts[fishType] * (undo ? -1 : 1));
+    })
+    setTotalData(prev => ({
+      ...prev,
+      [currentLake]: {
+        fishCounts
+      }
+    }));
+  }
  
   const undoLastAction = () => {
     const lastType = currentActionStack.pop();
-    if (lastType) {
+    if (lastType === "ALL") {
+      refillCurrentLake();
+      addWholePoolToTotalCount(true)
+    }
+    else if (lastType) {
       const newCounts = {
         ...currentFishCounts,
         [lastType]: currentFishCounts[lastType] + 1
@@ -352,26 +379,38 @@ export default function Home() {
           })}
         </ToggleGroup>
       </div>
-
-       <div className='grid grid-cols-3 gap-2 mb-4'>
-        {Object.values(FishType).map(type => (
-          <Button
-            key={type}
-            onClick={() => catchFish(type)}
-            disabled={currentFishCounts[type] === 0}
-            className={`h-fit ${getFishBgColor(type)} text-shadow-black text-shadow-sm/50 dark:text-shadow-none`} 
-            aria-label={`Catch ${type.toLowerCase()} fish`}
-          >
-            <div className='flex flex-col'>
-              <img
-                className="h-9 aspect-auto"
-                src={`${getFishImgSrc(currentLake, type)}`}
-                alt={`${currentLake} ${type} fish`}
-              />
-              <div>{`${currentFishCounts[type]} left`}</div>
-            </div>
-          </Button>
-        ))}
+      
+      <div className='flex flex-col gap-2 mb-4'>
+        <div className='grid grid-cols-3 gap-2'>
+          {Object.values(FishType).map(type => (
+            <Button
+              key={type}
+              onClick={() => catchFish(type)}
+              disabled={currentFishCounts[type] === 0}
+              className={`h-fit ${getFishBgColor(type)} text-shadow-black text-shadow-sm/50 dark:text-shadow-none`} 
+              aria-label={`Catch ${type.toLowerCase()} fish`}
+            >
+              <div className='flex flex-col'>
+                <img
+                  className="h-9"
+                  src={`${getFishImgSrc(currentLake, type)}`}
+                  alt={`${currentLake} ${type} fish`}
+                />
+                <div>{`${currentFishCounts[type]} left`}</div>
+              </div>
+            </Button>
+          ))}
+        </div>
+        <Button
+          onClick={catchWholePool}
+          disabled={currentActionStack.length > 0}
+          variant="secondary"
+          size="lg"
+          aria-label="Catch whole pool"
+        >
+          <FishSymbol size={14} />
+          Catch Whole Pool
+        </Button>
       </div>
 
       <Card className="mb-4">
