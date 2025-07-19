@@ -5,6 +5,7 @@ import { Info, Undo2, Scissors, X, Fish, FishSymbol } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 enum Lake {
   LAKEHOUSE = "Lakehouse",
@@ -150,18 +151,20 @@ export default function Home() {
   }, [currentLake, numThreads, lakesData, totalData]);
  
   const getTotalCaughtInfo = () => {
-    let totalCaught = 0;
-    let totalLegCaught = 0;
-    Object.values(totalData).forEach(lake => {
-      Object.keys(lake.fishCounts).forEach(key => {
-        const fishType = key as FishType;
-        const count = lake.fishCounts[fishType];
-        totalCaught += count
-        if (fishType === FishType.LEGENDARY) {
-          totalLegCaught += count
-        }
-      })
-    })
+    const totalCaught = Object.keys(totalData).map(key => {
+      const lake = key as Lake;
+      return {
+        lake: lake,
+        amount: Object.values(totalData[lake].fishCounts).reduce((prev, current) => prev + current)
+      };
+    });
+    const totalLegCaught = Object.keys(totalData).map(key => {
+      const lake = key as Lake;
+      return {
+        lake: lake,
+        amount: totalData[lake].fishCounts[FishType.LEGENDARY]
+      };
+    });
     return {
       totalCaught,
       totalLegCaught
@@ -481,12 +484,38 @@ export default function Home() {
       <Card className="mb-4">
         <CardContent className='text-lg'>
           <div className="flex items-center gap-1">
-            Total Fish Caught:
-            <span className="font-bold">{totalInfo.totalCaught}</span>
+            <span>Total Fish Caught:</span>
+            <span className="font-bold">{totalInfo.totalCaught.map(val => val.amount).reduce((prev, current) => prev + current)}</span>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Button variant="ghost" size="icon"><Info /></Button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 flex flex-col">
+                {totalInfo.totalCaught.map(val => {
+                  return <div key={val.lake} className='flex gap-1 text-sm'>
+                    <span className='font-semibold'>{`${val.lake}: `}</span>
+                    <span>{val.amount}</span>
+                  </div>
+                })}
+              </HoverCardContent>
+            </HoverCard>
           </div>
           <div className="flex items-center gap-1">
-            Total Legendary Fish Caught:
-            <span className="font-bold">{totalInfo.totalLegCaught}</span>
+            <span>Total Legendary Fish Caught:</span>
+            <span className="font-bold">{totalInfo.totalLegCaught.map(val => val.amount).reduce((prev, current) => prev + current)}</span>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <Button variant="ghost" size="icon"><Info /></Button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 flex flex-col">
+                {totalInfo.totalLegCaught.map(val => {
+                  return <div key={val.lake} className='flex gap-1 text-sm'>
+                    <span className='font-semibold'>{`${val.lake}: `}</span>
+                    <span>{val.amount}</span>
+                  </div>
+                })}
+              </HoverCardContent>
+            </HoverCard>
           </div>
         </CardContent>
       </Card>
