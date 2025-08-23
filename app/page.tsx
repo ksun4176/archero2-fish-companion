@@ -41,7 +41,7 @@ const getFishCounts = (lake: Lake) => {
   }
 }
 const getFishImgSrc = (lake: Lake, fishType: FishType) => {
-  return `/archero2-fish-companion/Fish_3_${lake}_${fishType}.png`;
+  return `/archero2-fish-companion/Fish_2_${lake}_${fishType}.png`;
 }
 const getFishBgColor = (fishType: FishType) => {
   switch (fishType) {
