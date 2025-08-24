@@ -97,6 +97,7 @@ export default function Home() {
     [Lake.POLAR]: { fishCounts: getBlankCounts() },
   });
   const [showInfo, setShowInfo] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
  
   // Load state from localStorage on mount
   useEffect(() => {
@@ -321,6 +322,7 @@ export default function Home() {
     });
     setTotalData(resetTotalData);
     resetThreads();
+    setConfirmReset(false);
   };
   
   return (
@@ -519,16 +521,34 @@ export default function Home() {
           </div>
         </CardContent>
       </Card>
-
-      <Button
-        onClick={resetAll}
-        variant="destructive"
-        className='w-full'
-        aria-label="Reset all data"
-      >
-        <X size={14} />
-        Reset All
-      </Button>
+      {confirmReset
+        ? <div className='flex gap-2'>
+            <Button
+              onClick={resetAll}
+              variant="destructive"
+              className='flex-1'
+              aria-label='Confirm reset'
+            >
+              Confirm
+            </Button>
+            <Button
+              onClick={() => setConfirmReset(false)}
+              className='flex-1'
+              aria-label='Cancel reset'
+            >
+              Cancel
+            </Button>
+          </div>
+        : <Button
+            onClick={() => setConfirmReset(true)}
+            variant="destructive"
+            className='w-full'
+            aria-label="Reset all data"
+          >
+            <X size={14} />
+            Reset All
+          </Button>
+      }
     </div>
   );
 };
