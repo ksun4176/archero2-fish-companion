@@ -41,15 +41,11 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-button-pool: var(--button-pool);
-  --color-button-pool-selected: var(--button-pool-selected);
-  --color-card-fish-legendary: var(--card-fish-legendary);
-  --color-card-fish-epic: var(--card-fish-epic);
-  --color-card-fish-rare: var(--card-fish-rare);
   --color-button-fish-legendary: var(--button-fish-legendary);
   --color-button-fish-epic: var(--button-fish-epic);
   --color-button-fish-rare: var(--button-fish-rare);
-}
+  --color-success: var(--success);
+  }
 
 :root {
   --radius: 0.625rem;
@@ -84,15 +80,11 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
-  --button-pool: oklch(0.45 0.04 257);
-  --button-pool-selected: oklch(0.38 0.14 266);
-  --card-fish-legendary: oklch(0.96 0.06 96);
-  --card-fish-epic: oklch(0.90 0.06 307);
-  --card-fish-rare: oklch(0.90 0.06 231);
   --button-fish-legendary: oklch(0.7511 0.1593 73.66);
   --button-fish-epic: oklch(0.5703 0.2448 317.49);
   --button-fish-rare: oklch(0.5397 0.1861 271.21);
-}
+  --success: oklch(0.6 0.118 184.704);
+  }
 
 .dark {
   --background: oklch(0.129 0.042 264.695);
@@ -126,14 +118,10 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
-  --button-pool: oklch(0.929 0.013 255.508);
-  --button-pool-selected: oklch(0.71 0.14 255);
-  --card-fish-legendary: oklch(0.208 0.042 265.755);
-  --card-fish-epic: oklch(0.208 0.042 265.755);
-  --card-fish-rare: oklch(0.208 0.042 265.755);
   --button-fish-legendary: oklch(0.83 0.19 73.66);
   --button-fish-epic: oklch(0.65 0.24 294);
   --button-fish-rare: oklch(0.67 0.22 250);
+  --success: oklch(0.696 0.17 162.48);
 }
 
 @layer base {
