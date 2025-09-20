@@ -28,6 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { basePath } from './_utils/utils';
+import QuestTrackerButton from './_components/quest-tracker-button';
 
 enum Lake {
   LAKEHOUSE = 'Lakehouse',
@@ -63,7 +65,7 @@ const getFishCounts = (lake: Lake) => {
   };
 };
 const getFishImgSrc = (set: string, lake: Lake, fishType: FishType) => {
-  return `/archero2-fish-companion/Fish_${set}_${lake}_${fishType}.png`;
+  return `${basePath}/Fish_${set}_${lake}_${fishType}.png`;
 };
 const getFishBgColor = (fishType: FishType) => {
   switch (fishType) {
@@ -446,6 +448,7 @@ export default function Home() {
 
       <div className='flex flex-col items-center mb-4'>
         <div className='w-full relative flex items-center justify-center mb-2 h-8'>
+          <QuestTrackerButton className='absolute left-0' />
           <div>Select a Lake</div>
           <Select
             value={fishSet}
