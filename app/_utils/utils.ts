@@ -25,7 +25,7 @@ export const Quests: Quest[] = [
   {
     name: QuestName.SilverTickets,
     breakpoints: [
-      [20, 40, 60, 80],
+      [20, 60, 120, 200],
       [20, 40, 60, 80],
     ],
     placeholderText: '# Bought',
@@ -43,21 +43,14 @@ export const Quests: Quest[] = [
   {
     name: QuestName.DailyLogin,
     breakpoints: [
-      Array(5)
-        .fill(0)
-        .map((_v, index) => index + 1),
-      Array(5).fill(5),
+      [1, 2, 3, 4, 5],
+      [10, 5, 5, 5, 5],
     ],
     placeholderText: '# Days',
   },
   {
     name: QuestName.GoldCave,
-    breakpoints: [
-      Array(4)
-        .fill(0)
-        .map((_v, index) => (index + 1) * 2),
-      Array(4).fill(5),
-    ],
+    breakpoints: [[2, 4, 8, 10], Array(4).fill(5)],
     placeholderText: '# Done',
   },
   {
@@ -67,12 +60,7 @@ export const Quests: Quest[] = [
   },
   {
     name: QuestName.SealBattle,
-    breakpoints: [
-      Array(5)
-        .fill(0)
-        .map((_v, index) => (index + 1) * 2),
-      Array(5).fill(5),
-    ],
+    breakpoints: [[2, 6, 8, 10], Array(4).fill(5)],
     placeholderText: '# Done',
   },
   {
